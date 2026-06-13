@@ -210,16 +210,20 @@ export function useRoom() {
     const flippedTopics = room.topics.filter(t => t.isFlipped)
     const totalTopics = room.topics.length
 
-    const flipStats: MemberFlipStat[] = room.members.map((member, index) => {
-      const memberFlipCount = Math.floor(flippedTopics.length / room.members.length) + 
-        (index < flippedTopics.length % room.members.length ? 1 : 0)
-      return {
-        memberId: member.id,
-        memberName: member.name,
-        memberAvatar: member.avatar,
-        flipCount: memberFlipCount
+    const flipCountMap: Record<string, number> = {}
+    flippedTopics.forEach(topic => {
+      if (topic.flippedBy) {
+        flipCountMap[topic.flippedBy] = (flipCountMap[topic.flippedBy] || 0) + 1
       }
     })
+
+    const flipStats: MemberFlipStat[] = room.members.map(member => ({
+      memberId: member.id,
+      memberName: member.name,
+      memberAvatar: member.avatar,
+      flipCount: flipCountMap[member.name] || 0
+    }))
+    flipStats.sort((a, b) => b.flipCount - a.flipCount)
 
     const typeCountMap: Record<TopicType, number> = {
       trouble: 0,

@@ -19,6 +19,7 @@ export interface Topic {
   author: string
   isAnonymous: boolean
   isFlipped: boolean
+  flippedBy?: string
   createdAt: string
   color: string
 }

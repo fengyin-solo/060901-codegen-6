@@ -34,9 +34,11 @@ export function useGame() {
 
     isFlipping.value = true
     
+    const playerName = getCurrentPlayer(room)
     const topic = getCurrentTopic(room)
     if (topic) {
       topic.isFlipped = true
+      topic.flippedBy = playerName
       currentTopic.value = topic
     }
 
@@ -57,11 +59,13 @@ export function useGame() {
     const room = getRoomById(roomId)
     if (!room) return null
 
+    const playerName = getCurrentPlayer(room)
     const unflippedTopics = room.topics.filter(t => !t.isFlipped)
     
     if (unflippedTopics.length > 0) {
       const randomTopic = getRandomItem(unflippedTopics)
       randomTopic.isFlipped = true
+      randomTopic.flippedBy = playerName
       currentTopic.value = randomTopic
       saveRoom(room)
       return randomTopic
@@ -75,6 +79,7 @@ export function useGame() {
         author: '急救箱',
         isAnonymous: true,
         isFlipped: true,
+        flippedBy: playerName,
         createdAt: new Date().toISOString(),
         color: '#FFD93D'
       }
