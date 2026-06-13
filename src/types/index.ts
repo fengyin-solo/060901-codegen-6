@@ -63,3 +63,35 @@ export const AVATAR_EMOJIS = [
   '😀', '😎', '🥳', '🤗', '😇', '🤩', '😜', '🤭',
   '🐱', '🐶', '🐼', '🦊', '🐨', '🐯', '🦁', '🐸'
 ]
+
+export interface MemberFlipStat {
+  memberId: string
+  memberName: string
+  memberAvatar: string
+  flipCount: number
+}
+
+export interface TypeStat {
+  type: TopicType
+  count: number
+  name: string
+  emoji: string
+  color: string
+}
+
+export interface MemberContributionStat {
+  memberName: string
+  memberAvatar: string
+  totalTopics: number
+  flippedTopics: number
+}
+
+export interface GameReport {
+  totalTopics: number
+  flippedTopics: number
+  flipStats: MemberFlipStat[]
+  typeStats: TypeStat[]
+  contributionStats: MemberContributionStat[]
+  mostActiveMember: string | null
+  mostActiveAvatar: string | null
+}

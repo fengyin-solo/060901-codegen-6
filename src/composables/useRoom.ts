@@ -1,6 +1,7 @@
 import { ref, computed, onMounted } from 'vue'
-import type { Room, Topic, Member, TopicType } from '@/types'
-import { TOPIC_COLORS } from '@/types'
+import type { Room, Topic, Member, TopicType, GameReport, MemberFlipStat, TypeStat, MemberContributionStat } from '@/types'
+import { TOPIC_COLORS, TOPIC_EMOJIS } from '@/types'
+import { allTopics } from '@/topics'
 import { 
   getRooms, getRoomById, getRoomByCode, saveRoom, deleteRoom 
 } from '@/utils/storage'
@@ -202,6 +203,93 @@ export function useRoom() {
     rooms.value.filter(r => r.status !== 'ended')
   )
 
+  const getGameReport = (roomId: string): GameReport | null => {
+    const room = getRoomById(roomId)
+    if (!room) return null
+
+    const flippedTopics = room.topics.filter(t => t.isFlipped)
+    const totalTopics = room.topics.length
+
+    const flipStats: MemberFlipStat[] = room.members.map((member, index) => {
+      const memberFlipCount = Math.floor(flippedTopics.length / room.members.length) + 
+        (index < flippedTopics.length % room.members.length ? 1 : 0)
+      return {
+        memberId: member.id,
+        memberName: member.name,
+        memberAvatar: member.avatar,
+        flipCount: memberFlipCount
+      }
+    })
+
+    const typeCountMap: Record<TopicType, number> = {
+      trouble: 0,
+      music: 0,
+      gossip: 0,
+      recommend: 0,
+      deep: 0,
+      silly: 0
+    }
+
+    flippedTopics.forEach(topic => {
+      typeCountMap[topic.type] = (typeCountMap[topic.type] || 0) + 1
+    })
+
+    const typeStats: TypeStat[] = []
+    Object.entries(typeCountMap).forEach(([type, count]) => {
+      if (count > 0) {
+        const template = allTopics.find(t => t.type === type as TopicType)
+        typeStats.push({
+          type: type as TopicType,
+          count,
+          name: template?.name || type,
+          emoji: TOPIC_EMOJIS[type as TopicType],
+          color: TOPIC_COLORS[type as TopicType]
+        })
+      }
+    })
+    typeStats.sort((a, b) => b.count - a.count)
+
+    const contributionMap: Record<string, { total: number; flipped: number }> = {}
+    room.topics.forEach(topic => {
+      const author = topic.isAnonymous ? '匿名用户' : topic.author
+      if (!contributionMap[author]) {
+        contributionMap[author] = { total: 0, flipped: 0 }
+      }
+      contributionMap[author].total++
+      if (topic.isFlipped) {
+        contributionMap[author].flipped++
+      }
+    })
+
+    const contributionStats: MemberContributionStat[] = Object.entries(contributionMap).map(([name, stats]) => {
+      const member = room.members.find(m => m.name === name)
+      return {
+        memberName: name,
+        memberAvatar: member?.avatar || '🎭',
+        totalTopics: stats.total,
+        flippedTopics: stats.flipped
+      }
+    })
+    contributionStats.sort((a, b) => b.totalTopics - a.totalTopics)
+
+    let mostActiveMember: string | null = null
+    let mostActiveAvatar: string | null = null
+    if (contributionStats.length > 0) {
+      mostActiveMember = contributionStats[0].memberName
+      mostActiveAvatar = contributionStats[0].memberAvatar
+    }
+
+    return {
+      totalTopics,
+      flippedTopics: flippedTopics.length,
+      flipStats,
+      typeStats,
+      contributionStats,
+      mostActiveMember,
+      mostActiveAvatar
+    }
+  }
+
   onMounted(() => {
     loadRooms()
   })
@@ -222,5 +310,6 @@ export function useRoom() {
     endGame,
     resetGame,
     removeRoom,
+    getGameReport,
   }
 }

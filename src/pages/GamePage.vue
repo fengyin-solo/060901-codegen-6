@@ -85,10 +85,10 @@ const handleShuffle = () => {
 }
 
 const handleEndGame = () => {
-  if (confirm('确定要结束游戏吗？')) {
+  if (confirm('确定要结束游戏吗？结束后可查看战报')) {
     endGame(roomId.value)
     showEndConfirm.value = false
-    router.push(`/room/${roomId.value}`)
+    router.push(`/room/${roomId.value}/report`)
   }
 }
 

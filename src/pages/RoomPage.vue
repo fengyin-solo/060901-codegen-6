@@ -124,6 +124,10 @@ const goBack = () => {
 const goToGame = () => {
   router.push(`/room/${roomId.value}/game`)
 }
+
+const goToReport = () => {
+  router.push(`/room/${roomId.value}/report`)
+}
 </script>
 
 <template>
@@ -143,10 +147,10 @@ const goToGame = () => {
         
         <button 
           v-if="currentRoom.status === 'ended'"
-          class="px-4 py-2 bg-green-500 text-white rounded-full text-sm font-medium"
-          @click="goToGame"
+          class="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-sm font-medium"
+          @click="goToReport"
         >
-          查看结果
+          📋 查看战报
         </button>
       </div>
 
